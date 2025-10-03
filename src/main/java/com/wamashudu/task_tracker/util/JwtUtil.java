@@ -80,6 +80,25 @@ public class JwtUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
+    // Additional methods for AuthService
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return generateToken(claims, username, expiration);
+    }
+
+    public String generateRefreshToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return generateToken(claims, username, refreshExpiration);
+    }
+
+    public Boolean isTokenValid(String token) {
+        return !isTokenExpired(token);
+    }
+
+    public Long getJwtExpiration() {
+        return expiration;
+    }
+
     private SecretKey getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
