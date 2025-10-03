@@ -31,3 +31,41 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Database ###
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+### Environment Variables ###
+.env
+.env.local
+.env.production
+.env.development
+
+### Application Logs ###
+logs/
+*.log
+application-*.properties.backup
+
+### OS Generated ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Security ###
+**/application-prod.properties
+**/secrets.properties
+*.key
+*.crt
+*.pem
+
+### IDE Specific ###
+.metadata
+.recommenders
+.sonarlint/
