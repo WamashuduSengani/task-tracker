@@ -69,3 +69,8 @@ Thumbs.db
 .metadata
 .recommenders
 .sonarlint/
+
+### Frontend Documentation ###
+frontend/FOLDER_STRUCTURE.md
+frontend/*.md.backup
+frontend/README.local.md
