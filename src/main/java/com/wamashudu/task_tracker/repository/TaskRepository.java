@@ -35,6 +35,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findOverdueTasks(@Param("currentDate") LocalDateTime currentDate);
     
     /**
+     * Find tasks that need to be marked as overdue (past due date but not already overdue or completed)
+     */
+    @Query("SELECT t FROM Task t WHERE t.dueDate < :currentDate AND t.status NOT IN ('COMPLETED', 'OVERDUE')")
+    List<Task> findTasksForOverdueUpdate(@Param("currentDate") LocalDateTime currentDate);
+    
+    /**
      * Find tasks by assigned user ordered by creation date (newest first)
      */
     @Query("SELECT t FROM Task t WHERE t.assignedUserId = :userId ORDER BY t.createdDate DESC")
