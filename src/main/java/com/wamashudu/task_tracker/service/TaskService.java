@@ -107,6 +107,14 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
+    public List<TaskResponse> getTasksDueBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        List<Task> tasks = taskRepository.findTasksDueBetween(startDate, endDate);
+        return tasks.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
     private TaskResponse convertToResponse(Task task) {
         String assignedUserName = null;
         if (task.getAssignedUserId() != null) {

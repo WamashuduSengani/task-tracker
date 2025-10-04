@@ -6,11 +6,13 @@ import com.wamashudu.task_tracker.dto.UpdateTaskRequest;
 import com.wamashudu.task_tracker.entity.Task;
 import com.wamashudu.task_tracker.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -47,12 +49,16 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAllTasks(
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Task.TaskStatus status) {
+            @RequestParam(required = false) Task.TaskStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dueDateStart,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dueDateEnd) {
         
         try {
             List<TaskResponse> tasks;
             
-            if (userId != null) {
+            if (dueDateStart != null && dueDateEnd != null) {
+                tasks = taskService.getTasksDueBetween(dueDateStart, dueDateEnd);
+            } else if (userId != null) {
                 tasks = taskService.getTasksByUserId(userId);
             } else if (status != null) {
                 tasks = taskService.getTasksByStatus(status);
