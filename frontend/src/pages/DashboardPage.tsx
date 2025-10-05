@@ -1,9 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { TaskProvider, useTasks } from '../contexts/TaskContext';
 import { Button } from '../components/ui';
+import { TaskList, TaskForm } from '../components/features/tasks';
+import { Task, CreateTaskRequest, UpdateTaskRequest } from '../types';
 
-export const DashboardPage = () => {
+const DashboardContent = () => {
   const { user, logout } = useAuth();
+  const { createTask, updateTask } = useTasks();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCreateTask = () => {
+    setShowCreateForm(true);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setShowCreateForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowCreateForm(false);
+    setEditingTask(null);
+  };
+
+  const handleSubmitTask = async (data: CreateTaskRequest | UpdateTaskRequest) => {
+    setIsSubmitting(true);
+    try {
+      if (editingTask) {
+        await updateTask(editingTask.id, data as UpdateTaskRequest);
+      } else {
+        await createTask(data as CreateTaskRequest);
+      }
+      handleCloseForm();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="dashboard-page">
@@ -25,17 +61,33 @@ export const DashboardPage = () => {
       
       <main className="dashboard-main">
         <div className="dashboard-content">
-          <h2>Your Tasks</h2>
-          <p>Task functionality will be implemented in the next feature branch.</p>
-          
-          <div className="user-details">
-            <h3>Account Information</h3>
-            <p><strong>Username:</strong> {user?.username}</p>
-            <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Role:</strong> {user?.role}</p>
-          </div>
+          <TaskList
+            onCreateTask={handleCreateTask}
+            onEditTask={handleEditTask}
+          />
         </div>
       </main>
+
+      {showCreateForm && (
+        <div className="modal-overlay" onClick={handleCloseForm}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <TaskForm
+              task={editingTask || undefined}
+              onSubmit={handleSubmitTask}
+              onCancel={handleCloseForm}
+              isLoading={isSubmitting}
+            />
+          </div>
+        </div>
+      )}
     </div>
+  );
+};
+
+export const DashboardPage = () => {
+  return (
+    <TaskProvider>
+      <DashboardContent />
+    </TaskProvider>
   );
 };

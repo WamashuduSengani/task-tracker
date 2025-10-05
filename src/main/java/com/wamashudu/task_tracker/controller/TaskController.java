@@ -49,23 +49,26 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAllTasks(
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Task.TaskStatus status,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dueDateStart,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dueDateEnd) {
         
         try {
             List<TaskResponse> tasks;
-            
             if (dueDateStart != null && dueDateEnd != null) {
                 tasks = taskService.getTasksDueBetween(dueDateStart, dueDateEnd);
             } else if (userId != null) {
                 tasks = taskService.getTasksByUserId(userId);
-            } else if (status != null) {
-                tasks = taskService.getTasksByStatus(status);
+            } else if (status != null && !status.isEmpty()) {
+                try {
+                    Task.TaskStatus statusEnum = Task.TaskStatus.valueOf(status);
+                    tasks = taskService.getTasksByStatus(statusEnum);
+                } catch (IllegalArgumentException ex) {
+                    return ResponseEntity.badRequest().build();
+                }
             } else {
                 tasks = taskService.getAllTasks();
             }
-            
             return ResponseEntity.ok(tasks);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
