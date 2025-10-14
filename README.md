@@ -70,9 +70,37 @@ docker-compose up --build
 ```
 
 ## API Endpoints
-- `/api/auth/*` - Authentication (login, register)
-- `/api/tasks/*` - Task CRUD operations
+- `/api/auth/*` - Authentication (login, register, refresh)
+- `/api/tasks/*` - Task CRUD operations, filtering
 - `/api/users/*` - User management
+- (If enabled) Swagger UI at `/swagger-ui.html`
+
+## Core Design Decisions
+- Chose **Spring Boot 3.0+** for modern features and compatibility
+- Used **Flyway** for simple, versioned DB migrations
+- Implemented **JWT** for stateless authentication
+- Used **H2** for fast, isolated testing
+- Feature branches for clean git history
+- **Docker** for easy local/cloud deployment
+
+## Trade-offs Made and Why
+- Minimal UI to focus on backend quality
+- Email alerts for overdue tasks not implemented (can be added)
+- Used Flyway over Liquibase for simplicity
+
+## What I'd Improve With More Time
+- Add email/notification integration for overdue tasks
+- Expand and polish UI features
+- Add advanced filtering and reporting
+- Implement caching and Redis
+- Enhance API documentation and error responses
+- Add more CI/CD automation
+
+## How to Test/Observe the Scheduler Functionality
+- Scheduler runs automatically (hourly by default, configurable via `app.scheduler.task-overdue.cron`)
+- Marks overdue tasks in the database
+- Observe logs for scheduler activity
+- Optionally, manually trigger overdue check via REST endpoint (if implemented)
 
 ## Testing
 - Backend: JUnit 5, Mockito, TestContainers
