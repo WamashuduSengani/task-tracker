@@ -73,7 +73,6 @@ docker-compose up --build
 - `/api/auth/*` - Authentication (login, register, refresh)
 - `/api/tasks/*` - Task CRUD operations, filtering
 - `/api/users/*` - User management
-- (If enabled) Swagger UI at `/swagger-ui.html`
 
 ## Core Design Decisions
 - Chose **Spring Boot 3.0+** for modern features and compatibility
@@ -100,7 +99,7 @@ docker-compose up --build
 - Scheduler runs automatically (hourly by default, configurable via `app.scheduler.task-overdue.cron`)
 - Marks overdue tasks in the database
 - Observe logs for scheduler activity
-- Optionally, manually trigger overdue check via REST endpoint (if implemented)
+- Optionally, manually trigger overdue check via REST endpoint
 
 ## Testing
 - Backend: JUnit 5, Mockito, TestContainers
