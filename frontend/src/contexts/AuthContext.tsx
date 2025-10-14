@@ -2,7 +2,6 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { User, AuthContextType, LoginRequest, RegisterRequest } from '../types';
 import { authService } from '../services/authService';
 
-// Auth state interface
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -10,7 +9,6 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-// Auth action types
 type AuthAction =
   | { type: 'AUTH_START' }
   | { type: 'AUTH_SUCCESS'; payload: { user: User; token: string } }
@@ -18,7 +16,6 @@ type AuthAction =
   | { type: 'LOGOUT' }
   | { type: 'SET_LOADING'; payload: boolean };
 
-// Initial state
 const initialState: AuthState = {
   user: null,
   token: null,
@@ -26,7 +23,6 @@ const initialState: AuthState = {
   isAuthenticated: false,
 };
 
-// Auth reducer
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'AUTH_START':
@@ -67,10 +63,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth provider component
 interface AuthProviderProps {
   children: React.ReactNode;
 }
@@ -80,49 +74,57 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       const storedToken = authService.getStoredToken();
-      const storedRefreshToken = authService.getStoredRefreshToken();
 
-      if (storedToken && storedRefreshToken) {
-        dispatch({ type: 'SET_LOADING', payload: true });
-        
-        try {
-          // Try to refresh the token to validate it and get user data
-          const authResponse = await authService.refreshToken(storedRefreshToken);
-          authService.saveTokens(authResponse.token, authResponse.refreshToken);
-          
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: {
-              user: authResponse.user,
-              token: authResponse.token,
-            },
-          });
-        } catch (error) {
-          // If refresh fails, clear stored tokens
-          authService.clearTokens();
-          dispatch({ type: 'AUTH_FAILURE' });
-        }
+      if (storedToken) {
+        authService.setAuthToken(storedToken);
+
+        const mockUser: User = {
+          id: 0,
+          username: 'User',
+          email: '',
+          role: 'USER'
+        };
+
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: {
+            user: mockUser,
+            token: storedToken,
+          },
+        });
       }
     };
 
     initializeAuth();
   }, []);
 
-  // Login function
+  useEffect(() => {
+    const handleAuthError = (event: CustomEvent) => {
+      authService.clearTokens();
+      dispatch({ type: 'LOGOUT' });
+    };
+
+    window.addEventListener('auth-error', handleAuthError as EventListener);
+
+    return () => {
+      window.removeEventListener('auth-error', handleAuthError as EventListener);
+    };
+  }, []);
+
   const login = async (credentials: LoginRequest): Promise<void> => {
     dispatch({ type: 'AUTH_START' });
-    
+
     try {
       const authResponse = await authService.login(credentials);
-      authService.saveTokens(authResponse.token, authResponse.refreshToken);
-      
+      authService.saveTokens(authResponse.accessToken, authResponse.refreshToken);
+
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
-          user: authResponse.user,
-          token: authResponse.token,
+          user: authService.extractUserFromAuthResponse(authResponse),
+          token: authResponse.accessToken,
         },
       });
     } catch (error) {
@@ -131,19 +133,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Register function
   const register = async (userData: RegisterRequest): Promise<void> => {
     dispatch({ type: 'AUTH_START' });
-    
+
     try {
       const authResponse = await authService.register(userData);
-      authService.saveTokens(authResponse.token, authResponse.refreshToken);
-      
+      authService.saveTokens(authResponse.accessToken, authResponse.refreshToken);
+
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
-          user: authResponse.user,
-          token: authResponse.token,
+          user: authService.extractUserFromAuthResponse(authResponse),
+          token: authResponse.accessToken,
         },
       });
     } catch (error) {
@@ -152,7 +153,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Logout function
   const logout = () => {
     authService.clearTokens();
     dispatch({ type: 'LOGOUT' });
@@ -174,8 +174,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     </AuthContext.Provider>
   );
 }
-
-// Custom hook to use auth context
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

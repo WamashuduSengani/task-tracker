@@ -42,9 +42,13 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
-  user: User;
+  tokenType: string;
+  expiresIn: number;
+  userId: number;
+  username: string;
+  role: string;
 }
 
 export interface AuthContextType {
@@ -55,4 +59,36 @@ export interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
+}
+
+export interface CreateTaskRequest {
+  title: string;
+  description: string;
+  dueDate?: string;
+}
+
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  status?: Task['status'];
+  dueDate?: string | null;
+}
+
+export interface TaskFilters {
+  status?: Task['status'];
+  dueDateBefore?: string;
+  dueDateAfter?: string;
+  assignedUserId?: number;
+  search?: string;
+}
+
+export interface TaskContextType {
+  tasks: Task[];
+  isLoading: boolean;
+  error: string | null;
+  createTask: (task: CreateTaskRequest) => Promise<void>;
+  updateTask: (id: number, updates: UpdateTaskRequest) => Promise<void>;
+  deleteTask: (id: number) => Promise<void>;
+  fetchTasks: (filters?: TaskFilters) => Promise<void>;
+  clearError: () => void;
 }

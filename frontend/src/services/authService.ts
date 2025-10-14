@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, LoginRequest, RegisterRequest, AuthResponse, ApiError } from '../types';
+import { API_BASE_URL, User, LoginRequest, RegisterRequest, AuthResponse, ApiError } from '../types';
 
 const API_URL = `${API_BASE_URL}/auth`;
 
@@ -36,8 +36,8 @@ export const authService = {
     return response.data;
   },
 
-  async refreshToken(token: string): Promise<AuthResponse> {
-    const response = await authApi.post<AuthResponse>('/refresh', { token });
+  async refreshToken(refreshToken: string): Promise<AuthResponse> {
+    const response = await authApi.post<AuthResponse>('/refresh', { refreshToken });
     return response.data;
   },
 
@@ -55,6 +55,15 @@ export const authService = {
     localStorage.setItem('token', token);
     localStorage.setItem('refreshToken', refreshToken);
     this.setAuthToken(token);
+  },
+
+  extractUserFromAuthResponse(authResponse: AuthResponse): User {
+    return {
+      id: authResponse.userId,
+      username: authResponse.username,
+      email: '', 
+      role: authResponse.role as 'USER' | 'ADMIN'
+    };
   },
 
   getStoredToken(): string | null {
