@@ -3,6 +3,8 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+frontend/node_modules/
+frontend/build/
 
 ### STS ###
 .apt_generated
@@ -37,6 +39,14 @@ build/
 *.sqlite
 *.sqlite3
 *.log
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+db_data/
+
+# Misc
+.env
 
 ### Environment Variables ###
 .env
