@@ -82,14 +82,18 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading = false }: TaskFo
     }
     
     try {
+      let formattedDueDate = formData.dueDate
+        ? `${formData.dueDate}T00:00:00`
+        : undefined;
+
       const submitData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
-        dueDate: formData.dueDate || undefined,
+        dueDate: formattedDueDate,
       };
-      
+
       await onSubmit(submitData);
-      
+
       // Clear form if creating new task
       if (!task) {
         setFormData({
