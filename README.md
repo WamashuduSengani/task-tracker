@@ -63,11 +63,65 @@ A full-stack task tracking application built with Spring Boot (Java) for the bac
    npm start
    ```
 
+
+
 ### Docker
-To run both backend and frontend with Docker:
+To run both backend and frontend with Docker, use **Docker Compose v2**:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
+
+**Important:**
+- If you see errors like `'ContainerConfig'` or container recreation failures, you are likely using Docker Compose v1. Upgrade to v2 for reliability:
+  1. Remove old Docker Compose:
+     ```bash
+     sudo apt-get remove docker-compose
+     sudo apt-get update
+     sudo apt-get install docker-compose-plugin
+     ```
+  2. Use the new command syntax:
+     ```bash
+     docker compose up --build
+     ```
+- This ensures smooth builds, restarts, and avoids known bugs in v1.
+
+**Important:**
+- For local development and tests, the backend uses H2 by default. You do **not** need PostgreSQL running locally.
+- Only the Docker/production profile uses PostgreSQL. This is automatically set when you run Docker Compose or the build script.
+- If you ever see errors about connecting to PostgreSQL at `localhost:5432` during local runs or tests, check that:
+   - You are **not** running with `SPRING_PROFILES_ACTIVE=docker` locally.
+   - Your `src/main/resources/application.properties` contains H2 settings (see below).
+   - You are not overriding the profile in your IDE or environment variables.
+
+**Troubleshooting:**
+- If you see `Connection to localhost:5432 refused` during local runs/tests, reset your profile and config:
+   1. Make sure `application.properties` uses H2 (see Database Configuration section below).
+   2. Do **not** set `SPRING_PROFILES_ACTIVE=docker` for local runs/tests.
+   3. Only use the `docker` profile when running in Docker.
+
+This ensures you never experience local PostgreSQL connection errors.
+
+### Docker Troubleshooting & Automation
+
+To ensure Docker builds never fail due to leftover containers, volumes, or missing JAR files, use the provided script:
+
+```bash
+./docker-cleanup-build.sh
+```
+
+This script will:
+- Clean up old Docker containers, volumes, images, and build cache
+- Remove the previous `target` directory
+- Build the Spring Boot JAR
+- Run `docker-compose up --build`
+
+**Usage:**
+```bash
+chmod +x docker-cleanup-build.sh
+./docker-cleanup-build.sh
+```
+
+This automates all necessary cleanups and builds for a smooth Docker experience.
 
 ## API Endpoints
 - `/api/auth/*` - Authentication (login, register, refresh)
@@ -116,3 +170,36 @@ MIT
 
 ## Author
 Wamashudu Sengani
+
+### Database Configuration
+
+By default, the backend uses **H2** for local development and tests, and **PostgreSQL** for Docker/production.
+
+**Local development & tests:**
+- Uses H2 in-memory database (see `src/main/resources/application.properties`).
+- No need to run PostgreSQL locally.
+
+**Docker/production:**
+- Uses PostgreSQL with credentials from `docker-compose.yml` and `src/main/resources/application-docker.properties`.
+- The backend automatically picks up Docker settings when you run:
+   ```bash
+   docker-compose up --build
+   # or
+   ./docker-cleanup-build.sh
+   ```
+
+**How profiles work:**
+- Local: default profile (H2)
+- Docker: `docker` profile (PostgreSQL)
+   - Spring Boot automatically loads `application-docker.properties` when you set `SPRING_PROFILES_ACTIVE=docker` (already set in Dockerfile or Compose)
+
+**To override profiles manually:**
+```bash
+SPRING_PROFILES_ACTIVE=docker ./mvnw spring-boot:run
+```
+
+**Credentials:**
+- Make sure your `docker-compose.yml` and `application-docker.properties` use the same username and password (`taskuser`/`taskpass`).
+
+**Environment variables:**
+- You may also use environment variables for secrets in production.
