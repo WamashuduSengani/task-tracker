@@ -63,13 +63,17 @@ A full-stack task tracking application built with Spring Boot (Java) for the bac
    npm start
    ```
 
-
-
 ### Docker
 To run both backend and frontend with Docker, use **Docker Compose v2**:
 ```bash
 docker compose up --build
 ```
+
+Once all containers have started, open your browser and go to:
+```
+http://localhost:3000
+```
+to access the Task Tracker frontend UI.
 
 **Important:**
 - If you see errors like `'ContainerConfig'` or container recreation failures, you are likely using Docker Compose v1. Upgrade to v2 for reliability:
